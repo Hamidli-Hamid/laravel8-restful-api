@@ -6,9 +6,10 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Http\Requests\ProductRequest;
 use App\Http\Resources\ProductCollection;
-use App\Http\Resources\ProductResource; 
+use App\Http\Resources\ProductResource;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use ErrorException;
 
 class ProductController extends Controller
 {
@@ -60,18 +61,18 @@ class ProductController extends Controller
      */
     public function store(ProductRequest $request)
     {
-        $productId = DB::table('products')->insertGetId([
-            'name'        => $request->name,
-            'category_id' => $request->category_id,
-            'feature_id'  => $request->feature_id,
-            'slug'        => Str::slug($request->name),
-            'created_at'  => now()
-        ]);
-
-        return response([ 
-            'message'      =>  'Product success added',
-            'created_data' =>  new ProductResource(DB::table('products')->find($productId))
-             ], 201);
+            $productId = DB::table('products')->insertGetId([
+                'name'        => $request->name,
+                'category_id' => $request->category_id,
+                'feature_id'  => $request->feature_id,
+                'slug'        => Str::slug($request->name),
+                'created_at'  => now()
+            ]);
+    
+            return response([ 
+                'message'      =>  'Product success added',
+                'created_data' =>  new ProductResource(DB::table('products')->find($productId))
+                 ], 201);  
     }
 
     /**
@@ -82,9 +83,14 @@ class ProductController extends Controller
      */
     public function show($id)
     {
-        $product = DB::table('products')->find($id);
+        try {
+            $product = DB::table('products')->find($id);
 
-        return new ProductResource($product);
+            return new ProductResource($product);
+        } 
+        catch(ErrorException $exception){
+            return $exception->getMessage();
+        }
     }
 
     /**
@@ -118,8 +124,13 @@ class ProductController extends Controller
      */
     public function destroy($id)
     {
-        DB::table('products')->where('id', $id)->delete();
+        try {
+            DB::table('products')->where('id', $id)->delete();
 
-        return response(['message' => 'Product Deleted'], 200);
+            return response(['message' => 'Product Deleted'], 200);
+        } 
+        catch(ErrorException $exception){
+            return $exception->getMessage();
+        }
     }
 }

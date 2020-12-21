@@ -21,13 +21,16 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::apiResources([
-    'categories' => CategoryController::class,
-    'products'   => ProductController::class,
-    'features'   => FeatureController::class
-    ]);
+Route::group(['middleware' => 'auth:api'], function(){
 
-Route::get('example', [ProductController::class, 'example']);  
+    Route::apiResources([
+        'categories' => CategoryController::class,
+        'products'   => ProductController::class,
+        'features'   => FeatureController::class
+        ]);
+
+});
+
 
 
 
