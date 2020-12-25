@@ -17,7 +17,7 @@ class CreateProductsTable extends Migration
             $table->id();
             $table->string('name', 60);
             $table->foreignId('category_id')->constrained('categories')->onDelete('cascade');
-            $table->foreignId('feature_id')->constrained('products')->onDelete(null);
+            $table->foreignId('feature_id')->constrained('features')->onDelete(null);
             $table->string('slug', 60);
             $table->boolean('status')->default(0)->comment('0:passiv 1:aktiv');
             $table->timestamps();
