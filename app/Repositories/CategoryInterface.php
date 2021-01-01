@@ -1,9 +1,9 @@
 <?php
 namespace App\Repositories;
 
-interface ProductInterface{
+interface CategoryInterface{
 
-    public function getFilterData($allRequest);
+    public function getAll();
 
     public function getById($id);
 

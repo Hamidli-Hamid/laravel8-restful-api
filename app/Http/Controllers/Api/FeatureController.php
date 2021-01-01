@@ -6,12 +6,16 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\FeatureRequest;
 use App\Http\Resources\FeatureCollection;
 use App\Http\Resources\FeatureResource;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
+use App\Services\FeatureService;
 
 class FeatureController extends Controller
 {
+    protected $service;
+
+    public function __construct(FeatureService $service)
+    {
+        $this->service = $service;
+    }
     /**
      * Display a listing of the resource.
      *
@@ -19,7 +23,7 @@ class FeatureController extends Controller
      */
     public function index()
     {
-        return new FeatureCollection(DB::table('features')->orderBy('created_at', 'DESC')->paginate(10));
+        return new FeatureCollection($this->service->getAll());
     }
 
     /**
@@ -30,15 +34,12 @@ class FeatureController extends Controller
      */
     public function store(FeatureRequest $request)
     {
-        $featureId = DB::table('features')->insertGetId([
-            'marka'      => $request->product_marka,
-            'model'      => $request->product_model,
-            'size'       => $request->product_size
-        ]);
+        $data = $request->all();
+        $featureId = $this->service->create($data);
 
         return response([ 
             'message'      =>  'Feature success added',
-            'created_data' =>  new FeatureResource(DB::table('features')->find($featureId))
+            'created_data' =>  new FeatureResource($this->service->getById($featureId))
              ], 201);
     }
 
@@ -50,9 +51,7 @@ class FeatureController extends Controller
      */
     public function show($id)
     {
-        $feature = DB::table('features')->find($id);
-
-        return new FeatureResource($feature);
+        return new FeatureResource($this->service->getById($id));
     }
 
     /**
@@ -64,15 +63,12 @@ class FeatureController extends Controller
      */
     public function update(FeatureRequest $request, $id)
     {
-        DB::table('features')->where('id', $id)->update([
-            'marka'      => $request->product_marka,
-            'model'      => $request->product_model,
-            'size'       => $request->product_size
-        ]);
+        $data = $request->all();
+        $featureId = $this->service->create($data);
 
-       return response([
+        return response([
            'message'      =>  'Feature success update',
-           'updated_data' =>  new FeatureResource( DB::table('features' )->find($id))
+           'updated_data' =>  new FeatureResource($this->service->getById($featureId))
             ], 200);
     }
 
@@ -84,8 +80,8 @@ class FeatureController extends Controller
      */
     public function destroy($id)
     {
-        DB::table('features')->where('id', $id)->delete();
-
+        $this->service->delete($id);
+        
         return response(['message' => 'Feature Deleted'], 200);
     }
 }

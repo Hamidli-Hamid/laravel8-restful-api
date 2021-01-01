@@ -5,12 +5,17 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CategoryRequest;
 use App\Http\Resources\CategoryCollection;
-use App\Http\Resources\CategoryResource;                           
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
+use App\Http\Resources\CategoryResource;       
+use App\Services\CategoryService;
 
 class CategoryController extends Controller
 {
+    protected $service;
+
+    public function __construct(CategoryService $service)
+    {
+        $this->service = $service;
+    }
     
     /**
      * Display a listing of the resource.
@@ -19,7 +24,7 @@ class CategoryController extends Controller
      */
     public function index()
     {
-        return new CategoryCollection(DB::table('categories')->orderBy('created_at', 'DESC')->paginate(10));
+        return new CategoryCollection($this->service->getAll());
     }
 
     /**
@@ -30,15 +35,12 @@ class CategoryController extends Controller
      */
     public function store(CategoryRequest $request)
     {
-         $categoryId = DB::table('categories')->insertGetId([
-            'title' => $request->category_title,
-            'slug'  => Str::slug($request->category_title),
-            'created_at' => now()
-        ]);
+        $data = $request->all();
+        $categoryId = $this->service->create($data);
 
         return response([ 
             'message'      =>  'Category success added',
-            'created_data' =>  new CategoryResource(DB::table('categories')->find($categoryId))
+            'created_data' =>  new CategoryResource($this->service->getById($categoryId))
              ], 201);
     }
 
@@ -50,9 +52,7 @@ class CategoryController extends Controller
      */
     public function show($id)
     {
-        $category = DB::table('categories')->find($id);
-
-        return new CategoryResource($category);
+        return new CategoryResource($this->service->getById($id));
     }
 
     /**
@@ -64,15 +64,12 @@ class CategoryController extends Controller
      */
     public function update(CategoryRequest $request, $id)
     {
-       DB::table('categories')->where('id', $id)->update([
-            'title' => $request->category_title,
-            'slug'  => Str::slug($request->category_title),
-            'updated_at' => now()
-       ]);
+        $data = $request->all();
+        $categoryId = $this->service->create($data);
 
        return response([
            'message'      =>  'Category success update',
-           'updated_data' =>  new CategoryResource( DB::table('categories' )->find($id))
+           'updated_data' =>  new CategoryResource( $this->service->getById($categoryId))
             ], 200);
     }
 
@@ -84,8 +81,8 @@ class CategoryController extends Controller
      */
     public function destroy($id)
     {
-        DB::table('categories')->where('id', $id)->delete();
-
+        $this->service->delete($id);
+        
         return response(['message' => 'Category Deleted'], 200);
     }
 }

@@ -8,8 +8,6 @@ use App\Services\ProductService;
 use App\Http\Requests\ProductRequest;
 use App\Http\Resources\ProductCollection;
 use App\Http\Resources\ProductResource;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use ErrorException;
 
 class ProductController extends Controller
@@ -43,7 +41,7 @@ class ProductController extends Controller
     public function store(ProductRequest $request)
     {
         $data = $request->all();
-        $productId = $this->service->store($data);
+        $productId = $this->service->create($data);
     
         return response([ 
                 'message'      =>  'Product success added',

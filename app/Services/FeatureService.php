@@ -2,20 +2,20 @@
 
 namespace App\Services;
 
-use App\Repositories\ProductRepository;
+use App\Repositories\FeatureRepository;
 
-class ProductService
+class FeatureService
 {
     protected $repository;
 
-    public function __construct(ProductRepository $repository)
+    public function __construct(FeatureRepository $repository)
     {
         $this->repository = $repository;
     }
 
-    public function getFilterData($request)
+    public function getAll()
     {
-        return $this->repository->getFilterData($request);
+        return $this->repository->getAll();
     }
 
     public function getById($id)
